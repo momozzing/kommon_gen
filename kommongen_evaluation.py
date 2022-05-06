@@ -54,30 +54,37 @@ def main(args):
     label_data = pd.read_csv(args.reference_file, delimiter="\t")
     gen_data = pd.read_csv(args.prediction_file, delimiter="\t")
 
+
     refs_list = label_data['label']
     preds_list = gen_data['gen']
-    for ref, prd in zip(refs_list, preds_list):
-        concept_set = mecab_tokenizer(ref)
-        concept_sets.append(concept_set)
+    concept_list = label_data['concept_set']
 
+    for ref, prd, con in zip(refs_list, preds_list, concept_list):
+        concept_set = mecab_tokenizer(con)
+        concept_sets.append(concept_set)
+        # print({'concep_set': concept_sets})
         # For BLEU score
         bleu_reference = [mecab_tokenizer(ref)]
         bleu_references.append(bleu_reference)
         bleu_prediction = mecab_tokenizer(prd.strip())
         bleu_predictions.append(bleu_prediction)
+        # print({'bleu_reference': bleu_reference})
+        # print({'bleu_reference': bleu_predictions})
 
         # For METEOR score
         met_reference = ref.strip()
         met_prediction = prd.strip()
         met_predictions.append(met_prediction)
         met_references.append(met_reference)
-
+        # print({'bleu_reference': bleu_reference})
+        # print({'bleu_predictions': bleu_predictions})
         # For ROUGE score
         preds = [prd.strip() for prd in preds_list]
         refs = [ref.strip() for ref in refs_list]
         rouge_references = [' '.join(list(map(str, model_tokenizer(ref)['input_ids']))) for ref in refs]
         rouge_predictions = [' '.join(list(map(str, model_tokenizer(prd)['input_ids']))) for prd in preds]
-
+        # print({'rouge_references': rouge_references})
+        # print({'rouge_predictions': rouge_predictions})
         bleu_score = bleu_metric.compute(predictions = bleu_predictions, references = bleu_references, max_order = 4)
         print("BLEU 3: ", round(bleu_score['precisions'][2],4))
         print("BLEU 4: ", round(bleu_score['precisions'][3],4))
