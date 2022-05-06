@@ -1,5 +1,5 @@
 '''
-deepspeed --num_gpus=1 model_deep.py
+deepspeed --num_gpus=1 model.py
 '''
 
 from argparse import ArgumentParser
@@ -56,7 +56,7 @@ parser.add_argument("--eos_token", default=tokenizer.eos_token, type=str)
 args = parser.parse_args()
 
 wandb.init(project="kommongen", name=f"kommongen-{model_name}")
-train_data = pd.read_csv("data/Training/label_data/train_data.csv", delimiter="\t")
+train_data = pd.read_csv("data/train_data.csv", delimiter="\t")
 train_text, train_labels = (
     train_data["concept_set"].values,
     train_data["label"].values,
@@ -74,7 +74,7 @@ train_loader = DataLoader(
     pin_memory=True,
 )
 
-eval_data = pd.read_csv("data/Validation/label_data/val_data.csv", delimiter="\t")
+eval_data = pd.read_csv("data/val_data.csv", delimiter="\t")
 
 eval_text, eval_labels = (
     eval_data["concept_set"].values,

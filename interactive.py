@@ -46,9 +46,10 @@ with torch.no_grad():
             max_length=30, 
             min_length=10,
             num_beams=10, 
-            no_repeat_ngram_size=3,
+            # no_repeat_ngram_size=2,
             early_stopping=True
         )
         gen = sample_output[0]
+
         print("System: " + tokenizer.decode(gen[len(input_ids[0]):-1], skip_special_tokens=True))
-        # print("System: " + tokenizer.decode(sample_output[0], skip_special_tokens=True))
+        print("System: " + tokenizer.decode(sample_output[0], skip_special_tokens=True))

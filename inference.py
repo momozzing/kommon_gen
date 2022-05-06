@@ -31,8 +31,8 @@ model.load_state_dict(torch.load(ckpt_name, map_location="cpu"))
 model.cuda()
 
 
-test_data = pd.read_csv("data/Test/label_data/test_data.csv", delimiter="\t")
-test_data = test_data[:5]
+test_data = pd.read_csv("data/test_data.csv", delimiter="\t")
+# test_data = test_data[:5]
 test_text, test_labels = (
     test_data["concept_set"].values,
     test_data["label"].values,
@@ -44,7 +44,7 @@ dataset = [
 ]
 
 
-gen_text = []
+gen_list = []
 
 for data in tqdm(dataset):
     text, label = data["data"], data["label"]
@@ -65,12 +65,13 @@ for data in tqdm(dataset):
         min_length=10,
         num_beams=10, 
         no_repeat_ngram_size=3,
-        # early_stopping=True
+        early_stopping=True
     )
     gen = sample_output[0]
-    gen_text.append(str(tokenizer.decode(gen[len(input_ids[0]):-1], skip_special_tokens=True)))
+    gen_text = str(tokenizer.decode(gen[len(input_ids[0]):-1], skip_special_tokens=True)).split('.')[0]
+    gen_list.append(gen_text)
 
 
-
-gen_df = pd.DataFrame(gen_text, columns = ['gen'])
+gen_df = pd.DataFrame(gen_list, columns = ['gen'])
+gen_df = pd.concat([gen_df, test_data["concept_set"]], axis = 1)
 gen_df.to_csv(f'result/gen_text_{ckpt}.csv', sep='\t')
