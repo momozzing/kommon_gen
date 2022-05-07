@@ -37,6 +37,12 @@ def main(args):
     met_references = []
     met_predictions = []
 
+    label_data = pd.read_csv(args.reference_file, delimiter="\t")
+    gen_data = pd.read_csv(args.prediction_file, delimiter="\t")
+    refs_list = label_data['label']
+    preds_list = gen_data['gen']
+    concept_list = label_data['concept_set']
+
     if args.model == "kobart":
         model_tokenizer = PreTrainedTokenizerFast.from_pretrained('hyunwoongko/kobart')
 
@@ -44,59 +50,54 @@ def main(args):
         model_tokenizer = MBartTokenizer.from_pretrained('facebook/mbart-large-50')
 
     elif args.model == "kogpt2":
-        model_tokenizer = PreTrainedTokenizerFast.from_pretrained('skt/kogpt2-base-v2')  # Tokenizer download
+        model_tokenizer = AutoTokenizer.from_pretrained('skt/kogpt2-base-v2')  # Tokenizer download
 
     if args.model not in ['kobart', 'kogpt2', 'mbart-50']:
         raise ValueError("One of kogpg2, kobart, and mbart-50 must be selected.")
     
     mecab_tokenizer = Mecab().morphs
 
-    label_data = pd.read_csv(args.reference_file, delimiter="\t")
-    gen_data = pd.read_csv(args.prediction_file, delimiter="\t")
-
-
-    refs_list = label_data['label']
-    preds_list = gen_data['gen']
-    concept_list = label_data['concept_set']
-
     for ref, prd, con in zip(refs_list, preds_list, concept_list):
-        concept_set = mecab_tokenizer(con)
+        concept_set = mecab_tokenizer(con.strip())
         concept_sets.append(concept_set)
-        # print({'concep_set': concept_sets})
+        # print(concept_set)
+
         # For BLEU score
-        bleu_reference = [mecab_tokenizer(ref)]
+        bleu_reference = [mecab_tokenizer(ref.strip())]
         bleu_references.append(bleu_reference)
         bleu_prediction = mecab_tokenizer(prd.strip())
         bleu_predictions.append(bleu_prediction)
         # print({'bleu_reference': bleu_reference})
-        # print({'bleu_reference': bleu_predictions})
+        # print({'bleu_prediction': bleu_prediction})
 
         # For METEOR score
         met_reference = ref.strip()
         met_prediction = prd.strip()
         met_predictions.append(met_prediction)
         met_references.append(met_reference)
-        # print({'bleu_reference': bleu_reference})
-        # print({'bleu_predictions': bleu_predictions})
-        # For ROUGE score
-        preds = [prd.strip() for prd in preds_list]
-        refs = [ref.strip() for ref in refs_list]
-        rouge_references = [' '.join(list(map(str, model_tokenizer(ref)['input_ids']))) for ref in refs]
-        rouge_predictions = [' '.join(list(map(str, model_tokenizer(prd)['input_ids']))) for prd in preds]
-        # print({'rouge_references': rouge_references})
-        # print({'rouge_predictions': rouge_predictions})
-        bleu_score = bleu_metric.compute(predictions = bleu_predictions, references = bleu_references, max_order = 4)
-        print("BLEU 3: ", round(bleu_score['precisions'][2],4))
-        print("BLEU 4: ", round(bleu_score['precisions'][3],4))
+        # print({'met_reference': met_reference})
+        # print({'met_prediction': met_prediction})
+        
+    # For ROUGE score
+    preds = [prd.strip() for prd in preds_list]
+    refs = [ref.strip() for ref in refs_list]
+    rouge_references = [' '.join(list(map(str, model_tokenizer(ref)['input_ids']))) for ref in refs]
+    rouge_predictions = [' '.join(list(map(str, model_tokenizer(prd)['input_ids']))) for prd in preds]
+    # print({'rouge_references': rouge_references})
+    # print({'rouge_predictions': rouge_predictions})
 
-        meteor_score = meteor_metric.compute(predictions = met_predictions, references = met_references)
-        print("METEOR: ", round(meteor_score['meteor'], 4))
+    bleu_score = bleu_metric.compute(predictions = bleu_predictions, references = bleu_references, max_order = 4)
+    print("BLEU 3: ", round(bleu_score['precisions'][2],4))
+    print("BLEU 4: ", round(bleu_score['precisions'][3],4))
 
-        rouge_score = rouge_metric.compute(predictions = rouge_predictions, references = rouge_references, use_stemmer=True)
-        print("ROUGE-2: ", rouge_score['rouge2'])
-        print("ROUGE-L: ", rouge_score['rougeL'])
+    meteor_score = meteor_metric.compute(predictions = met_predictions, references = met_references)
+    print("METEOR: ", round(meteor_score['meteor'], 4))
 
-        scoring(preds, concept_sets, mecab_tokenizer)
+    rouge_score = rouge_metric.compute(predictions = rouge_predictions, references = rouge_references, use_stemmer=True)
+    print("ROUGE-2: ", rouge_score['rouge2'])
+    print("ROUGE-L: ", rouge_score['rougeL'])
+
+    scoring(preds, concept_sets, mecab_tokenizer)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

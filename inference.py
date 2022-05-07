@@ -69,7 +69,7 @@ for data in tqdm(dataset):
     )
     gen = sample_output[0]
     gen_text = str(tokenizer.decode(gen[len(input_ids[0]):-1], skip_special_tokens=True)).split('.')[0]
-    gen_list.append(gen_text)
+    gen_list.append(gen_text+'.')
 
 
 gen_df = pd.DataFrame(gen_list, columns = ['gen'])
