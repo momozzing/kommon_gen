@@ -9,7 +9,7 @@ from tqdm import tqdm
 
 
 model_name = "skt/kogpt2-base-v2"
-ckpt = 'skt-kogpt2-base-v2-5.pt'
+ckpt = 'skt-kogpt2-base-v2-4.pt'
 ckpt_name = f"model_save/{ckpt}"
 
 model = AutoModelWithLMHead.from_pretrained(model_name)

@@ -1,5 +1,5 @@
 '''
-python kommongen_evaluation.py --model kogpt2 --reference_file data/test_data.csv --prediction_file result/gen_text_skt-kogpt2-base-v2-5.pt.csv
+python kommongen_evaluation.py --model kogpt2 --reference_file data/test_data.csv --prediction_file result/gen_text_skt-kogpt2-base-v2-4.pt.csv
 '''
 
 import datasets
@@ -93,7 +93,7 @@ def main(args):
     meteor_score = meteor_metric.compute(predictions = met_predictions, references = met_references)
     print("METEOR: ", round(meteor_score['meteor'], 4))
 
-    rouge_score = rouge_metric.compute(predictions = rouge_predictions, references = rouge_references, use_stemmer=True)
+    rouge_score = rouge_metric.compute(predictions = rouge_predictions, references = rouge_references)
     print("ROUGE-2: ", rouge_score['rouge2'])
     print("ROUGE-L: ", rouge_score['rougeL'])
 
