@@ -71,6 +71,7 @@ for data in tqdm(dataset):
     gen_text = str(tokenizer.decode(gen[len(input_ids[0]):-1], skip_special_tokens=True)).split('.')[0]
     gen_list.append(gen_text+'.')
 
+    print("System: " + tokenizer.decode(sample_output[0], skip_special_tokens=True))
 
 gen_df = pd.DataFrame(gen_list, columns = ['gen'])
 gen_df = pd.concat([gen_df, test_data["concept_set"]], axis = 1)
