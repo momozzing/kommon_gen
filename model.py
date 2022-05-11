@@ -1,6 +1,6 @@
-'''
+"""
 deepspeed --num_gpus=1 model.py
-'''
+"""
 
 from argparse import ArgumentParser
 import os
@@ -35,15 +35,13 @@ SPECIAL_TOKENS = {
     "bos_token": "[bos]",
     "eos_token": "[eos]",
     "pad_token": "[pad]",
-    "sep_token": "[sep]"
-    }
+    "sep_token": "[sep]",
+}
 tokenizer.add_special_tokens(SPECIAL_TOKENS)
 
-model = AutoModelWithLMHead.from_pretrained(
-    model_name
-).cuda()
+model = AutoModelWithLMHead.from_pretrained(model_name).cuda()
 
-model.resize_token_embeddings(len(tokenizer)) 
+model.resize_token_embeddings(len(tokenizer))
 
 parser = ArgumentParser()
 parser.add_argument("--deepspeed_config", type=str, default="ds_config.json")
@@ -63,7 +61,7 @@ train_text, train_labels = (
 )
 
 dataset = [
-    {"data": t + str(args.sep_token) + l + str(args.eos_token), "label": l }
+    {"data": t + str(args.sep_token) + l + str(args.eos_token), "label": l}
     for t, l in zip(train_text, train_labels)
 ]
 train_loader = DataLoader(
@@ -82,7 +80,7 @@ eval_text, eval_labels = (
 )
 
 dataset = [
-    {"data": t + str(args.sep_token) + l + str(args.eos_token), "label": l }
+    {"data": t + str(args.sep_token) + l + str(args.eos_token), "label": l}
     for t, l in zip(eval_text, eval_labels)
 ]
 eval_loader = DataLoader(
@@ -127,7 +125,6 @@ for epoch in range(args.epoch):
         engine.backward(loss)
         engine.step()
 
-
     with torch.no_grad():
         model.eval()
         for eval in tqdm(eval_loader):
@@ -149,10 +146,13 @@ for epoch in range(args.epoch):
                 labels=input_ids,
             )
 
-            eval_loss = eval_out.loss   
+            eval_loss = eval_out.loss
 
             # print({"eval_loss": eval_loss})
         wandb.log({"eval_loss": eval_loss})
-        wandb.log({"epoch": epoch+1})
+        wandb.log({"epoch": epoch + 1})
 
-        torch.save(model.state_dict(), f"model_save/{model_name.replace('/', '-')}-{epoch+1}.pt")
+        torch.save(
+            model.state_dict(),
+            f"model_save/{model_name.replace('/', '-')}-{epoch+1}.pt",
+        )
